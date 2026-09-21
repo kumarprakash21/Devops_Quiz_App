@@ -22,7 +22,7 @@ npm run server
 npm run client
 ```
 
-Open `http://localhost:5173`.
+The Express API runs on `http://localhost:3000` and the React client runs on `http://localhost:5173`. Open `http://localhost:5173` in your browser.
 
 ## Included
 
