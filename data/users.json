@@ -1,0 +1,11 @@
+[
+  {
+    "id": "21b114d6-a672-4735-873a-7dc82e7efa35",
+    "name": "Prakash Kumar Gautam",
+    "email": "prakash@gmail.com",
+    "passwordSalt": "35c9236bb8f207e6730f69922af19efc",
+    "passwordHash": "cd7ac67612a74d5ca134f95c005927b3e9214b35607d821cbf17168a4fb0f3e14d080b82a8b5d649c337e89759266b7746588ec457f2dbde077a803575db8b7c",
+    "joinedAt": "2026-09-21T07:45:15.581Z",
+    "attempts": []
+  }
+]
