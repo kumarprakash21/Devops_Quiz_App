@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Practice Microsoft Azure certification questions and review your answers." />
+    <title>CloudPrep | Azure Certification Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <button class="brand" id="brandButton" type="button" aria-label="Go to course library">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        <span>Cloud<span>Prep</span></span>
+      </button>
+      <div class="header-actions" id="headerActions">
+        <span class="practice-pill"><span class="status-dot"></span>Practice mode</span>
+        <div id="userActions"></div>
+        <button class="icon-button" id="themeToggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42m0-12.72-1.42 1.42M7.06 16.94l-1.42 1.42M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <footer>
+      <p>Built for focused Azure learning. Not affiliated with or endorsed by Microsoft.</p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
