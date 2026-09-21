@@ -43,6 +43,7 @@ function Quiz({ sectionIndex, user, onBack, onComplete }) {
   const [question, setQuestion] = useState(null);
   const [selected, setSelected] = useState(null);
   const [correct, setCorrect] = useState(0);
+  const [answers, setAnswers] = useState([]);
   const [number, setNumber] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -52,10 +53,25 @@ function Quiz({ sectionIndex, user, onBack, onComplete }) {
   const next = async () => {
     if (selected === null) return;
     const nextCorrect = correct + (selected === question.answer ? 1 : 0);
-    if (number === 20) { const result = await api.saveAttempt({ section: section.name, correct: nextCorrect, total: 20 }); onComplete({ ...result.user, lastScore: { section: section.name, correct: nextCorrect, total: 20 } }); return; }
-    setCorrect(nextCorrect); setNumber(number + 1); await loadQuestion();
+    const answerRecord = { question: question.question, options: question.options, selected, correct: question.answer, explanation: question.explanation };
+    const nextAnswers = [...answers, answerRecord];
+    if (number === 20) {
+      setLoading(true);
+      try {
+        const result = await api.saveAttempt({ section: section.name, correct: nextCorrect, total: 20 });
+        onComplete({ user: result.user, review: { section: section.name, correct: nextCorrect, total: 20, answers: nextAnswers } });
+      } catch (requestError) { setError(requestError.message); }
+      finally { setLoading(false); }
+      return;
+    }
+    setAnswers(nextAnswers); setCorrect(nextCorrect); setNumber(number + 1); await loadQuestion();
   };
   return <main className="shell quiz"><button className="back" onClick={onBack}>← Back to sections</button><div className="quiz-heading"><div><p className="eyebrow">{section.name}</p><h1>Question {number} of 20</h1></div><span>{Math.round(((number - 1) / 20) * 100)}%</span></div><div className="progress"><i style={{ width: `${(number / 20) * 100}%` }}/></div>{loading ? <div className="question-card loading"><div className="spinner"/><h2>Shuffling a fresh question…</h2><p>The server is selecting one you have not seen in this attempt.</p></div> : error ? <div className="question-card error-card"><h2>Question unavailable</h2><p>{error}</p><button className="button primary" onClick={loadQuestion}>Try again</button></div> : <div className="question-card"><p className="eyebrow">Fresh question</p><h2>{question.question}</h2><div className="options">{question.options.map((option, index) => <button key={option} className={`option ${selected === index ? "selected" : ""}`} onClick={() => setSelected(index)}><span>{String.fromCharCode(65 + index)}</span>{option}</button>)}</div><div className="question-actions"><span>{selected === null ? "Choose one answer" : "Answer selected"}</span><button className="button primary" disabled={selected === null} onClick={next}>{number === 20 ? "Finish section" : "Next question →"}</button></div></div>}</main>;
+}
+
+function Results({ review, onSections, onProfile }) {
+  const percentage = Math.round((review.correct / review.total) * 100);
+  return <main className="shell results"><div className="result-banner"><div><p className="eyebrow">Assessment complete</p><h1>{percentage >= 70 ? "Strong work — you passed." : "Good start — keep building."}</h1><p>{review.correct} of {review.total} answers correct in {review.section}.</p></div><strong>{percentage}%</strong></div><div className="result-actions"><button className="button primary" onClick={onSections}>Try another section</button><button className="button secondary" onClick={onProfile}>Open profile</button></div><div className="section-title"><div><p className="eyebrow">Answer review</p><h2>Review your answers</h2></div></div><div className="review-list">{review.answers.map((answer, index) => { const isCorrect = answer.selected === answer.correct; return <article className={`review-card ${isCorrect ? "review-correct" : "review-wrong"}`} key={`${index}-${answer.question}`}><div className="review-label">{isCorrect ? "✓ Correct" : "✕ Incorrect"}<span>Question {index + 1}</span></div><h3>{answer.question}</h3><p className={isCorrect ? "answer good" : "answer bad"}><b>Your answer:</b> {answer.options[answer.selected]}</p>{!isCorrect && <p className="answer good"><b>Correct answer:</b> {answer.options[answer.correct]}</p>}<p className="explanation"><b>Why:</b> {answer.explanation}</p></article>; })}</div></main>;
 }
 
 function Profile({ user, onBack, onLogout }) {
@@ -69,10 +85,12 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("home");
   const [sectionIndex, setSectionIndex] = useState(null);
+  const [review, setReview] = useState(null);
   const [checking, setChecking] = useState(true);
   useEffect(() => { if (!localStorage.getItem(tokenKey)) return setChecking(false); api.me().then(result => setUser(result.user)).catch(() => localStorage.removeItem(tokenKey)).finally(() => setChecking(false)); }, []);
   const logout = () => { localStorage.removeItem(tokenKey); setUser(null); setPage("home"); };
-  const complete = updatedUser => { setUser(updatedUser); setPage("profile"); };
+  const openProfile = async () => { try { const result = await api.me(); setUser(result.user); setPage("profile"); } catch { localStorage.removeItem(tokenKey); setUser(null); } };
+  const complete = result => { setUser(result.user); setReview(result.review); setPage("results"); };
   if (checking) return <><Header/><div className="center-loader">Loading CloudPrep…</div></>;
-  return <><Header user={user} onProfile={() => setPage("profile")} onLogout={logout}/>{!user ? <Auth onAuth={account => { setUser(account); setPage("home"); }}/> : page === "home" ? <Home onSections={() => setPage("sections")} onProfile={() => setPage("profile")}/> : page === "sections" ? <Sections onBack={() => setPage("home")} onStart={index => { setSectionIndex(index); setPage("quiz"); }}/> : page === "quiz" ? <Quiz key={`${sectionIndex}-${Date.now()}`} user={user} sectionIndex={sectionIndex} onBack={() => setPage("sections")} onComplete={complete}/> : <Profile user={user} onBack={() => setPage("home")} onLogout={logout}/>}</>;
+  return <><Header user={user} onProfile={openProfile} onLogout={logout}/>{!user ? <Auth onAuth={account => { setUser(account); setPage("home"); }}/> : page === "home" ? <Home onSections={() => setPage("sections")} onProfile={openProfile}/> : page === "sections" ? <Sections onBack={() => setPage("home")} onStart={index => { setSectionIndex(index); setPage("quiz"); }}/> : page === "quiz" ? <Quiz key={`${sectionIndex}-${Date.now()}`} user={user} sectionIndex={sectionIndex} onBack={() => setPage("sections")} onComplete={complete}/> : page === "results" ? <Results review={review} onSections={() => setPage("sections")} onProfile={openProfile}/> : <Profile user={user} onBack={() => setPage("home")} onLogout={logout}/>}</>;
 }
