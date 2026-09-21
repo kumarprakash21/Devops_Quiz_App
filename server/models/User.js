@@ -6,6 +6,7 @@ const attemptSchema = new mongoose.Schema({
   total: { type: Number, required: true, min: 1 },
   percentage: { type: Number, required: true, min: 0, max: 100 },
   passed: { type: Boolean, required: true },
+  durationSeconds: { type: Number, required: true, min: 0, default: 0 },
   completedAt: { type: Date, default: Date.now }
 }, { _id: true });
 
