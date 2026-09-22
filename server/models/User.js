@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const attemptSchema = new mongoose.Schema({
+  course: { type: String, required: true, default: "AZ-104" },
   section: { type: String, required: true },
   correct: { type: Number, required: true, min: 0 },
   total: { type: Number, required: true, min: 1 },

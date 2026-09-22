@@ -138,13 +138,62 @@ const rawQuestionSections = [
   }
 ];
 
-const questionSections = rawQuestionSections.map(section => ({
+const generatedCourseSections = (course, definitions) => definitions.flatMap(definition => {
+  const topics = definition.topics;
+  return [{
+    course,
+    title: definition.title,
+    shortTitle: definition.shortTitle,
+    description: definition.description,
+    questions: topics.map((topic, index) => q(
+      `Which ${course} concept is most closely associated with ${topic}?`,
+      topic,
+      [topics[(index + 1) % topics.length], topics[(index + 2) % topics.length], topics[(index + 3) % topics.length]],
+      `${topic} is a core ${course} topic covered in this section.`
+    ))
+  }];
+});
+
+const generatedTopics = [
+  ["Images", "Containers", "Dockerfile", "Build context", "Registries", "Tags", "Layers", "Volumes", "Bind mounts", "Networks", "Bridge networking", "Port publishing", "Environment variables", "Compose", "Health checks", "Logs", "Exec", "Prune", "Namespaces", "Resource limits"],
+  ["Pods", "Deployments", "ReplicaSets", "Services", "ConfigMaps", "Secrets", "Namespaces", "Labels", "Selectors", "Annotations", "Ingress", "Probes", "Init containers", "Jobs", "CronJobs", "DaemonSets", "StatefulSets", "Persistent volumes", "Storage classes", "Horizontal Pod Autoscaler"],
+  ["Git", "Branches", "Pull requests", "Merge conflicts", "CI", "CD", "Build artifacts", "Release gates", "Agents", "Pipelines", "Workflows", "Environment approvals", "Secrets", "Artifacts", "Versioning", "Rollback", "Blue-green deployment", "Canary release", "Infrastructure as code", "Observability"],
+  ["Docker Engine", "Docker Hub", "Containerd", "Kubernetes API", "Kubelet", "Kube-proxy", "Control plane", "Worker node", "Scheduler", "Controller manager", "etcd", "Helm", "Chart", "Values", "Argo CD", "GitOps", "RBAC", "Network policy", "Container registry", "Image scanning"],
+  ["Caching", "Parallel jobs", "Matrix builds", "Branch policy", "Code review", "Static analysis", "Unit tests", "Integration tests", "Smoke tests", "Deployment slots", "Feature flags", "Monitoring", "Alerting", "Tracing", "Log aggregation", "SLO", "MTTR", "Incident response", "Runbooks", "Postmortems"]
+];
+
+const courseSections = [
+  ...generatedCourseSections("Docker", [
+    { title: "Docker fundamentals", shortTitle: "Fundamentals", description: "Images, containers, Dockerfiles, and the Docker runtime.", topics: generatedTopics[0] },
+    { title: "Docker networking and storage", shortTitle: "Networking & Storage", description: "Container networking, volumes, mounts, and configuration.", topics: generatedTopics[1] },
+    { title: "Docker images and registries", shortTitle: "Images & Registries", description: "Build, tag, publish, secure, and manage container images.", topics: generatedTopics[2] },
+    { title: "Docker Compose and operations", shortTitle: "Compose & Operations", description: "Multi-container applications, health, logs, and operations.", topics: generatedTopics[3] },
+    { title: "Docker security and delivery", shortTitle: "Security & Delivery", description: "Secure images and deliver reliable container workloads.", topics: generatedTopics[4] }
+  ]),
+  ...generatedCourseSections("Kubernetes", [
+    { title: "Kubernetes workloads", shortTitle: "Workloads", description: "Pods, deployments, jobs, and workload controllers.", topics: generatedTopics[1] },
+    { title: "Kubernetes networking and storage", shortTitle: "Networking & Storage", description: "Services, ingress, persistent storage, and cluster networking.", topics: generatedTopics[0] },
+    { title: "Kubernetes configuration", shortTitle: "Configuration", description: "ConfigMaps, Secrets, labels, namespaces, and scheduling.", topics: generatedTopics[3] },
+    { title: "Kubernetes security", shortTitle: "Security", description: "RBAC, network policies, image security, and pod protection.", topics: generatedTopics[4] },
+    { title: "Kubernetes operations", shortTitle: "Operations", description: "Scaling, observability, upgrades, and reliable operations.", topics: generatedTopics[2] }
+  ]),
+  ...generatedCourseSections("DevOps", [
+    { title: "DevOps foundations", shortTitle: "Foundations", description: "Collaboration, version control, branching, and delivery culture.", topics: generatedTopics[2] },
+    { title: "Continuous integration", shortTitle: "Continuous Integration", description: "Builds, tests, artifacts, and quality gates.", topics: generatedTopics[4] },
+    { title: "Continuous delivery", shortTitle: "Continuous Delivery", description: "Releases, approvals, environments, and deployment strategies.", topics: generatedTopics[3] },
+    { title: "Infrastructure and automation", shortTitle: "Infrastructure", description: "Infrastructure as code, containers, orchestration, and GitOps.", topics: generatedTopics[0] },
+    { title: "DevOps reliability", shortTitle: "Reliability", description: "Monitoring, incident response, SLOs, and continuous improvement.", topics: generatedTopics[1] }
+  ])
+];
+
+const questionSections = [...rawQuestionSections.map(section => ({ course: "AZ-104", ...section })), ...courseSections].map(section => ({
   ...section,
   questions: section.questions.map((item, index) => {
     const options = [item.correct, ...item.distractors];
     const shift = index % options.length;
     const rotated = [...options.slice(shift), ...options.slice(0, shift)];
     return {
+      course: section.course,
       domain: section.shortTitle,
       question: item.question,
       options: rotated,

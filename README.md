@@ -22,6 +22,14 @@ npm run server
 npm run client
 ```
 
+Or start both processes with one command:
+
+```powershell
+npm run dev
+```
+
+Press Ctrl+C once to stop both the Express server and Vite client.
+
 The Express API runs on `http://localhost:3000` and the React client runs on `http://localhost:5173`. Open `http://localhost:5173` in your browser.
 
 ## Included

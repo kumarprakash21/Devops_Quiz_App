@@ -15,6 +15,6 @@ export const api = {
   register: body => request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
   login: body => request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   me: () => request("/auth/me"),
-  nextQuestion: (section, excludeIds) => request("/questions/next", { method: "POST", body: JSON.stringify({ section, excludeIds }) }),
+  nextQuestion: (course, section, excludeIds) => request("/questions/next", { method: "POST", body: JSON.stringify({ course, section, excludeIds }) }),
   saveAttempt: body => request("/attempts", { method: "POST", body: JSON.stringify(body) })
 };
